@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 PLAYER = 1
 COMPUTER = -1
 
@@ -34,12 +36,13 @@ def get_posible_moves(board:list[list[int]])->list[tuple[int,int]]:
 
     return valid_moves
 
-def play_move(row:int, column:int, board: list[list[int]], player: int)->bool:
-    if not board[row][column] == 0:
-        return False
+def play_move(row:int, column:int, board: list[list[int]], player: int)->tuple[bool, list[list[int]]]:
+    copy: list[list[int]] = deepcopy(board)
+    if not copy[row][column] == 0:
+        return False, copy
     
-    board[row][column] = player
-    return True
+    copy[row][column] = player
+    return True, copy
 
 def draw_board(board: list[list[int]], markers:dict[int,str])->None:
     def tran(row: int, column: int)->str|None:
@@ -55,19 +58,19 @@ def draw_board(board: list[list[int]], markers:dict[int,str])->None:
     
     return
 
-def play_turn(player:int, board:list[list[int]])->None:
+def play_turn(player:int, board:list[list[int]])->list[list[int]]:
     cell:int = int(input("Pick a cell(1-9): ")) - 1
     if cell < 0 or cell > 8:
         print("Outside Range")
-        play_turn(player, board)
-        return
+        return play_turn(player, board)
     print(f"{cell//3}, {cell%3}")
-    moved: bool = play_move(cell//3, cell%3, board, player)
+    moved: bool 
+    copy: list[list[int]]
+    moved, copy = play_move(cell//3, cell%3, board, player)
     if not moved:
         print("Invalid move")
-        play_turn(player, board)
-        return
+        return play_turn(player, board)
     print("Move Success")
-    return
+    return copy
 
 

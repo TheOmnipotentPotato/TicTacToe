@@ -13,7 +13,7 @@ COMPUTER = -1
 
 
 
-def main():
+def main(board: list[list[int]]):
     print("Pick your marker (x | o): \n")
     marker: str = str(input())
     stupid: list[str] = ["x", "o"]
@@ -28,17 +28,23 @@ def main():
     while True:
         if len(get_posible_moves(board)) == 0:
             break
-        if check_win(board):
+        win: int = check_win(board)
+        if win:
+            print(f"{"Player" if win == 1 else "Computer"} wins")
             break
 
-        play_turn(PLAYER, board)
+        board = play_turn(PLAYER, board)
         draw_board(board, markers)
-        n_row, n_col = nv.pick_next_move(board)
+        try:
+            n_row, n_col = nv.pick_next_move(board)
+        except nv.InvalidBoardState:
+            continue
         print("Computer Turn")
-        play_move(n_row, n_col, board, COMPUTER)
+        _: bool
+        _, board = play_move(n_row, n_col, board, COMPUTER)
         draw_board(board, markers)
         
 
 if __name__ == "__main__":
-    main()
+    main(board)
 

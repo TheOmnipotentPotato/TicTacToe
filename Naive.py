@@ -1,19 +1,26 @@
-from Game import score_board, get_posible_moves, check_win, play_move
+from Game import check_win, get_posible_moves, play_move, score_board
+from random import shuffle
+
+class InvalidBoardState(Exception):
+    pass
 
 def pick_next_move(board: list[list[int]])->tuple[int,int]:
+    if check_win(board):
+       raise InvalidBoardState("Game Win has occurred") 
     moves: list[tuple[int, tuple[int, int]]] = [] 
-    print(board)
     for row, col in get_posible_moves(board):
         score: int = hypothetical_score(board, row, col)
         moves.append((score, (row, col)))
-        print(board)
-    moves.sort(key= (lambda x : x[0]))
-    return moves[0][1]
+    print(f"all moves: \n {moves}")
+    tie_moves: list[tuple[int, tuple[int, int]]] = [move for move in moves if move[0] == 0]
+    win_moves: list[tuple[int, tuple[int, int]]] = [move for move in moves if move[0] == -10] 
+    print(f"available moves tie moves: \n {tie_moves} \n available win moves: \n {win_moves}")
+    shuffle(tie_moves)
+    shuffle(win_moves)
+    return win_moves[0][1] if not len(win_moves) == 0 else tie_moves[0][1]
 
 def hypothetical_score(board:list[list[int]], row: int, col: int)->int:
-    board_copy = board[:]
-    # (for oliver and matt) this is how you copy list in python
-    # i can explain why this is needed if you like
-    _ = play_move(row, col, board_copy, -1)
-    return score_board(board_copy)
+    _: bool
+    _, board = play_move(row, col, board, -1)
+    return score_board(board)
 
