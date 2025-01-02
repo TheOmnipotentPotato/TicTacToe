@@ -58,6 +58,20 @@ def draw_board(board: list[list[int]], markers:dict[int,str])->None:
     
     return
 
+def to_string(board:list[list[int]], markers:dict[int,str])->str:
+    def tran(row: int, column: int)->str|None:
+        return markers.get(board[row][column])
+
+    out:str = "+-+-+-+\n"+\
+    f"|{tran(0,0)}|{tran(0,1)}|{tran(0,2)}|\n"+\
+    "+-+-+-+\n"+\
+    f"|{tran(1,0)}|{tran(1,1)}|{tran(1,2)}|\n"+\
+    "+-+-+-+\n"+\
+    f"|{tran(2,0)}|{tran(2,1)}|{tran(2,2)}|\n"+\
+    "+-+-+-+"
+    return out
+
+
 def play_turn(player:int, board:list[list[int]])->list[list[int]]:
     cell:int = int(input("Pick a cell(1-9): ")) - 1
     if cell < 0 or cell > 8:
