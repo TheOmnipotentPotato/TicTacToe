@@ -1,5 +1,10 @@
-from Game import get_posible_moves, draw_board, play_move, play_turn, check_win, score_board, PLAYER, COMPUTER
+
+from typing import override
+from Game import draw_board, get_posible_moves, play_move, check_win, score_board, to_string, PLAYER, COMPUTER
 from copy import deepcopy
+
+class InvalidBoardState(Exception):
+    pass
 
 class MoveNode:
     def __init__(self, *args):
@@ -12,7 +17,7 @@ class MoveNode:
             self.board: list[list[int]] = deepcopy(args[3])
             _, self.board = play_move(self.move[0], self.move[1], self.board, self.player)
         #board:list[list[int]], player:int
-        if(len(args) == 2): 
+        elif(len(args) == 2): 
             self.move: None = None
             self.player: int = args[0]
             self.future_moves: list[MoveNode] = []
@@ -50,11 +55,22 @@ class MoveNode:
             #minimizer branch
             self.score = min(self.future_moves, key = compare_by_score).score
         return
-
+    @override        
+    def __str__(self)->str:
+        return f"board: {self.board} \n score: {self.score}"
 class DecisionTree:
     def __init__(self, board:list[list[int]], player:int, depth:int=2):
         self.root:list[MoveNode] = [MoveNode(player, board)]
         self.depth:int = depth
+    
+    def next_move(self)->tuple[int,int]:
+        DecisionTree.build_tree(self.root, 0, 2)
+        DecisionTree.score_tree(self.root)
+        moves:list[MoveNode] = self.root[0].future_moves 
+        tie_moves: list[MoveNode] = [move for move in moves if move.score == 0]
+        win_moves: list[MoveNode] = [move for move in moves if move.score == -10] 
+        
+        return win_moves[0].move if not len(win_moves) == 0 else tie_moves[0].move #type: ignore
 
     @classmethod
     def build_tree(cls, nodes:list[MoveNode], cur_depth:int, goal_depth:int):
@@ -63,6 +79,48 @@ class DecisionTree:
         for node in nodes:
             node.generate_next_round()
             DecisionTree.build_tree(node.future_moves, cur_depth+1, goal_depth)
-            
+        return
+    
+    @classmethod
+    def score_tree(cls, nodes:list[MoveNode]):
+        print(" ".join([str(node.board) for node in nodes]))
+        for node in nodes:
+            DecisionTree.score_tree(node.future_moves)
+            node.score_moves()
+            print(node.score)
+            if(node.score != 0):
+                print("<===================>\n score:" + str(node.score))
+                draw_board(node.board, {
+                    PLAYER: "x",
+                    COMPUTER: "o",
+                    0 : " "
+                })
+                print("<===================>")
+        return
+
+
+    @override
+    def __str__(self)->str:
+        raise NotImplementedError
+
+
+def pick_next_move(board: list[list[int]])->tuple[int,int]:
+    if check_win(board):
+       raise InvalidBoardState("Game Win has occurred") 
+    tree: DecisionTree = DecisionTree(board, COMPUTER)
+    return tree.next_move()
+    
+
+
+if __name__ == "__main__":
+    board = [
+        [-1,0,0],
+        [ 0,0,1],
+        [-1,0,0],
+    ]
+    tree = DecisionTree(board, COMPUTER)
+    DecisionTree.build_tree(tree.root, 0, 2)
+    DecisionTree.score_tree(tree.root)
+
 
 
