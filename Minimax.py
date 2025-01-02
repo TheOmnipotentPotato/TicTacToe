@@ -49,12 +49,20 @@ class MoveNode:
         elif self.player == COMPUTER:
             #minimizer branch
             self.score = min(self.future_moves, key = compare_by_score).score
+        return
 
+class DecisionTree:
+    def __init__(self, board:list[list[int]], player:int, depth:int=2):
+        self.root:list[MoveNode] = [MoveNode(player, board)]
+        self.depth:int = depth
 
-
-
-
-
-
+    @classmethod
+    def build_tree(cls, nodes:list[MoveNode], cur_depth:int, goal_depth:int):
+        if cur_depth > goal_depth:
+            return
+        for node in nodes:
+            node.generate_next_round()
+            DecisionTree.build_tree(node.future_moves, cur_depth+1, goal_depth)
+            
 
 
